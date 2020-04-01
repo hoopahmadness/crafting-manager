@@ -85,7 +85,7 @@ func (this CraftingList) updateDescription(itemName, description string) {
 func (this CraftingList) toBytes() []byte {
 	list := []CraftingItem{}
 	for _, item := range this {
-		if len(item.Recipes) > 0 {
+		if len(item.Recipes) > 0 || item.Description != "" {
 			list = append(list, item)
 		}
 	}
@@ -93,6 +93,7 @@ func (this CraftingList) toBytes() []byte {
 	return b
 }
 
+//this is gonnaa be a problem later for items with no recipes but with descriptions!!
 func (this CraftingList) fromBytes(b []byte) (err error) {
 	list := []CraftingItem{}
 	err = json.Unmarshal(b, &list)

@@ -2,17 +2,68 @@ package main
 
 import (
 	"fmt"
-	// "os"
-	// "github.com/urfave/cli/v2"
+  "strings"
+)
+
+const (
+	USES     = "USES"
+	USEALL   = "USEALL"
+	SHOW     = "SHOW"
+	INSERT   = "INSERT"
+	ELEMENTS = "ELEMENTS"
+	DESCRIBE = "DESCRIBE"
+	LISTALL  = "LISTALL"
+	EXIT     = "EXIT"
 )
 
 func main() {
+	//generate list from file
+	//MAIN LOOP
+	//	USES  <item> -> print listUses(), back to main loop
+	//	USESAll  <item> -> print listUses() recursively, back to main loop
+	//	SHOW  <item> -> print report with name, description, recipes, etc return to main loop
+	//	INSERT  -> go to insert loop, make x number of recipes, return to main loop
+	//	ELEMENTS  -> go to insert loop, make x number of recipes, return to main loop
+	//	DESCRIBE  <item> -> print current description, then allows user input to replace it, returns to main loop
+	//	LISTALL  -> Print all item names in list with descriptions
+	//	EXIT -> write to file, stop program
+	//
+
 	list := CraftingList{}
 
 	_ = list.fromBytes([]byte(testInput))
-	// fmt.Println(list.listUses("Tree Branches", true)[0])
-	fmt.Println(list.listElements("Gold Net", 2, map[string]int{"Net": 2}))
-	// &cli.App{}).Run(os.Args)
+  mainLoop(list)
+}
+
+func mainLoop(list CraftingList) {
+	keepRunning := true
+	for keepRunning {
+		command, arguments := parseInput()
+		switch command {
+		case USES:
+			useList := list.listUses(arguments, false)
+      fmt.Println(strings.Join(useList, "\n"))
+		case USEALL:
+			useList := list.listUses(arguments, true)
+      fmt.Println(strings.Join(useList, "\n"))
+  		case SHOW:
+			fmt.Println(list[arguments])
+		case INSERT:
+			//insert wizard loop
+		case ELEMENTS:
+			//elements loop
+		case DESCRIBE:
+			//description loop
+		case LISTALL:
+			for k, _ := range list {
+				fmt.Println(k)
+			}
+		case EXIT:
+			keepRunning = false
+		default:
+			fmt.Println("Sorry, didn't recognize that.")
+		}
+	}
 
 }
 
