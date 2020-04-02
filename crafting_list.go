@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 type CraftingList map[string]CraftingItem
@@ -24,9 +25,10 @@ func (this CraftingList) addRecipe(name, description string, output int, ingredi
 
 //only to be used when inserting a single new recipe and all its ingredients into the crafting list
 func (this CraftingList) insertItem(item CraftingItem) {
-	oldItem, OK := this[item.Name]
+	key := strings.ToLower(item.Name)
+	oldItem, OK := this[key]
 	if !OK {
-		this[item.Name] = item
+		this[key] = item
 	} else {
 		if item.Description != "" {
 			oldItem.Description = item.Description
@@ -37,15 +39,22 @@ func (this CraftingList) insertItem(item CraftingItem) {
 				oldItem.UsedIn = append(oldItem.UsedIn, item.UsedIn...)
 			}
 		}
-		this[item.Name] = oldItem
+		this[key] = oldItem
 	}
 }
 
 func (this CraftingList) listRecipes(itemName string) []Recipe {
+	itemName= strings.ToLower(itemName)
 	return this[itemName].Recipes
 }
 
+func (this CraftingList) getItem(itemName string) (item CraftingItem, OK bool) {
+	item, OK = this[strings.ToLower(itemName)]
+	return
+}
+
 func (this CraftingList) listUses(itemName string, recursion bool) []string {
+	itemName = strings.ToLower(itemName)
 	NUses := this[itemName].UsedIn
 	if recursion && len(NUses) > 0 {
 		ARC := []string{}
@@ -67,16 +76,15 @@ func (this CraftingList) listUses(itemName string, recursion bool) []string {
 	return NUses
 }
 
-func (this CraftingList) listElements(itemName string, itemNumber int, resolutions map[string]int) []string {
-	if resolutions == nil {
-		resolutions = map[string]int{}
-	}
+func (this CraftingList) getElementTree(itemName string, itemNumber int, resolutions map[string]int) Tree { 
+	itemName = strings.ToLower(itemName)
 	tree := newTree(this, itemName)
 	tree.walk()
-	return tree.getElements(itemNumber, resolutions)
+	return tree
 }
 
 func (this CraftingList) updateDescription(itemName, description string) {
+	itemName = strings.ToLower(itemName)
 	item := this[itemName]
 	item.Description = description
 	this[itemName] = item
@@ -85,11 +93,12 @@ func (this CraftingList) updateDescription(itemName, description string) {
 func (this CraftingList) toBytes() []byte {
 	list := []CraftingItem{}
 	for _, item := range this {
+		report("Plywood", item.Name, item)
 		if len(item.Recipes) > 0 || item.Description != "" {
 			list = append(list, item)
 		}
 	}
-	b, _ := json.Marshal(list)
+	b, _ := json.MarshalIndent(list, "", "\t")
 	return b
 }
 

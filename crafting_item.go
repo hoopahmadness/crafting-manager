@@ -4,7 +4,7 @@ type CraftingItem struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Recipes     []Recipe `json:"recipes"`
-	UsedIn      []string
+	UsedIn      []string `json:"uses"`
 }
 
 func newItem(name, description string) (item CraftingItem) {

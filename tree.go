@@ -18,7 +18,8 @@ type Tree struct {
 func newTree(list CraftingList, itemName string) Tree {
 	t := Tree{}
 	t.List = list
-	item := list[itemName]
+	item, OK := list.getItem(itemName)
+	if !OK {say("Item not found, creating an empty tree")}
 	t.Root = &item
 	return t
 }
@@ -51,14 +52,21 @@ func (this *Tree) walk() {
 	}
 }
 
-func (this Tree) getElements(neededAmount int, resolve map[string]int) []string {
+func (this Tree) getElements(neededAmount int, resolve map[string]int) ([]string, int) {
+	if resolve == nil {
+		resolve = map[string]int{}
+	}
+	forks := 0
 	var out []string
 	name := this.Root.Name
+	processedRecipes := 0
 	for layerCount, recipe := range this.Root.Recipes {
-		val, OK := resolve[name]
-		if OK && val != layerCount+1 { //check to see if we have a resolution for this branch, and only allow that layer
+		val, OK := resolve[strings.ToLower(name)]
+		if OK && val != layerCount+1 { //check to see if we have a resolution for this branch, and only allow that layer to run
 			continue
 		}
+		processedRecipes ++ //this helps us keep track of forks after accounting for resolutions.
+		if processedRecipes > 1 {forks++}
 		// report(1, layerCount, "On the second layer")
 		multiplier := 1
 		outputAmount := recipe.Output
@@ -70,11 +78,11 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) []string 
 			inputAmount := ing.Amount * multiplier
 			ingredientName := ing.Name
 			formatStr := "Craft %d %s from %d %s; %s"
-			nextLevelArr := this.Branches[layerCount][ingNumber].getElements(inputAmount, resolve)
-			// report(1, layerCount, nextLevelArr)
+			nextLevelArr, nextLevelForks := this.Branches[layerCount][ingNumber].getElements(inputAmount, resolve)
 			if len(nextLevelArr) == 0 {
 				nextLevelArr = append(nextLevelArr, "\n")
 			}
+			forks += nextLevelForks
 			for _, nextLevel := range nextLevelArr {
 				var outStr string
 				templateStr := fmt.Sprintf(formatStr, outputAmount, name, inputAmount, ingredientName, `%s`)
@@ -90,7 +98,7 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) []string 
 			out = append(out, ORSIGNAL)
 		}
 	}
-	return out
+	return out, forks
 }
 
 func report(litmus, varString, toPrint interface{}) {
