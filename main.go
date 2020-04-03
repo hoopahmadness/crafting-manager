@@ -40,8 +40,14 @@ func main() {
   inputFilePath := os.Args[1]
   jsonBytes, err := ioutil.ReadFile(inputFilePath)
   if err != nil {
-    say(err.Error())
-    return
+     if strings.Contains(err.Error(), "no such file or directory") {
+      //let's just create the file and move on
+      say("That file doesn't exist, so I'll initialize an empty Crafting List and save to that file later!")
+      say("Use the "+INSERT+" command to add recipes to the new file!")
+     } else {
+      say(err.Error())
+      return
+     }
   }
 
 	list := CraftingList{}
