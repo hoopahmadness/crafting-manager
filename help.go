@@ -65,5 +65,7 @@ Ex.
 	Gold Net
 	Fishing Rod`
 
+	ourMap[EXIT] = `Exit the program safely. This will update your input file with any new recipes or changes you've saved.`
+
 	return
 }
