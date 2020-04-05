@@ -44,7 +44,7 @@ func (this CraftingList) insertItem(item CraftingItem) {
 }
 
 func (this CraftingList) listRecipes(itemName string) []Recipe {
-	itemName= strings.ToLower(itemName)
+	itemName = strings.ToLower(itemName)
 	return this[itemName].Recipes
 }
 
@@ -76,11 +76,13 @@ func (this CraftingList) listUses(itemName string, recursion bool) []string {
 	return NUses
 }
 
-func (this CraftingList) getElementTree(itemName string, itemNumber int, resolutions map[string]int) Tree { 
+func (this CraftingList) getElementTree(itemName string) (Tree, bool) {
 	itemName = strings.ToLower(itemName)
-	tree := newTree(this, itemName)
-	tree.walk()
-	return tree
+	tree, OK := newTree(this, itemName)
+	if OK {
+		tree.walk()
+	}
+	return tree, OK
 }
 
 func (this CraftingList) updateDescription(itemName, description string) {
@@ -93,7 +95,6 @@ func (this CraftingList) updateDescription(itemName, description string) {
 func (this CraftingList) toBytes() []byte {
 	list := []CraftingItem{}
 	for _, item := range this {
-		report("Plywood", item.Name, item)
 		if len(item.Recipes) > 0 || item.Description != "" {
 			list = append(list, item)
 		}

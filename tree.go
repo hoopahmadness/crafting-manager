@@ -15,13 +15,12 @@ type Tree struct {
 	Branches [][]*Tree
 }
 
-func newTree(list CraftingList, itemName string) Tree {
-	t := Tree{}
+func newTree(list CraftingList, itemName string) (t Tree, OK bool) {
+	t = Tree{}
 	t.List = list
 	item, OK := list.getItem(itemName)
-	if !OK {say("Item not found, creating an empty tree")}
 	t.Root = &item
-	return t
+	return
 }
 
 func (this *Tree) graft(other Tree, layer int) {
@@ -45,7 +44,7 @@ func (this *Tree) walk() {
 			// fmt.Println("printing ingredient:")
 			// fmt.Println(ingredient)
 			ingredientName := ingredient.Name
-			branch := newTree(this.List, ingredientName)
+			branch, _ := newTree(this.List, ingredientName)
 			branch.walk()
 			this.graft(branch, layerCount)
 		}
@@ -65,8 +64,10 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) ([]string
 		if OK && val != layerCount+1 { //check to see if we have a resolution for this branch, and only allow that layer to run
 			continue
 		}
-		processedRecipes ++ //this helps us keep track of forks after accounting for resolutions.
-		if processedRecipes > 1 {forks++}
+		processedRecipes++ //this helps us keep track of forks after accounting for resolutions.
+		if processedRecipes > 1 {
+			forks++
+		}
 		// report(1, layerCount, "On the second layer")
 		multiplier := 1
 		outputAmount := recipe.Output
@@ -87,7 +88,7 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) ([]string
 				var outStr string
 				templateStr := fmt.Sprintf(formatStr, outputAmount, name, inputAmount, ingredientName, `%s`)
 				if nextLevel == ORSIGNAL {
-					outStr = strings.Repeat(" ", len(templateStr)) + ORSIGNAL
+					outStr = strings.Repeat(" ", len(templateStr+5)) + ORSIGNAL
 				} else {
 					outStr = fmt.Sprintf(templateStr, nextLevel)
 				}

@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 func parseInput() string {
@@ -13,7 +13,7 @@ func parseInput() string {
 	fmt.Print("> ")
 	sentence, err := buf.ReadBytes('\n')
 	if err != nil {
-		say(err)
+		print(say.DEFAULT(err))
 	}
 	return strings.Trim(string(sentence), "\n")
 }
@@ -37,14 +37,14 @@ func getCommandAndArgs() (command, args string) {
 
 func getYesOrNo() (answer string) {
 	for answer != YES && answer != NO {
-		say("Please send YES or NO ")
-		answer = strings.ToUpper(parseInput())	
+		print(say.DIRECTION("Please send YES or NO "))
+		answer = strings.ToUpper(parseInput())
 	}
 	return
 }
 
 func getBackResponse() (answer bool) {
-	answer = strings.ToUpper(parseInput())==BACK
+	answer = strings.ToUpper(parseInput()) == BACK
 	return
 }
 
@@ -52,13 +52,13 @@ func getInteger() (answer int) {
 	noGoodAnswer := true
 	var err error
 	for noGoodAnswer {
-		say("Please send a valid whole number")
+		print(say.DIRECTION("Please send a valid whole number"))
 		answerStr := parseInput()
 		answer, err = strconv.Atoi(answerStr)
 		if err == nil {
 			noGoodAnswer = false
 		} else {
-			say(err)
+			print(say.WARNING(err))
 		}
 	}
 	return
