@@ -1,8 +1,6 @@
 package main
 
 /*TO DO
-Add colors to responses (HELP statements, general statements, output from queries, direction, question prompts, emphasis)
-add slight delay to responses
 Prettier output for some data structures (recipes,)
 Add a "SAVE" function to save before closing
 Add a "READ" function to add more recipes during operations
@@ -17,6 +15,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
@@ -213,6 +212,7 @@ func insertRecipeLoop(list CraftingList) {
 }
 
 func print(words interface{}) {
+	time.Sleep(80 * time.Millisecond)
 	fmt.Println(words)
 }
 

@@ -88,7 +88,7 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) ([]string
 				var outStr string
 				templateStr := fmt.Sprintf(formatStr, outputAmount, name, inputAmount, ingredientName, `%s`)
 				if nextLevel == ORSIGNAL {
-					outStr = strings.Repeat(" ", len(templateStr+5)) + ORSIGNAL
+					outStr = strings.Repeat(" ", len(templateStr)+5) + ORSIGNAL
 				} else {
 					outStr = fmt.Sprintf(templateStr, nextLevel)
 				}
