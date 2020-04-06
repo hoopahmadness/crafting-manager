@@ -5,10 +5,6 @@ import (
 	"strings"
 )
 
-const (
-	ORSIGNAL = "OR\n"
-)
-
 type Tree struct {
 	List     CraftingList
 	Root     *CraftingItem
@@ -51,12 +47,12 @@ func (this *Tree) walk() {
 	}
 }
 
-func (this Tree) getElements(neededAmount int, resolve map[string]int) ([]string, int) {
+func (this Tree) getElements(neededAmount int, resolve map[string]int) (BranchingReport, int) {
 	if resolve == nil {
 		resolve = map[string]int{}
 	}
 	forks := 0
-	var out []string
+	var out BranchingReport
 	name := this.Root.Name
 	processedRecipes := 0
 	for layerCount, recipe := range this.Root.Recipes {
@@ -68,7 +64,6 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) ([]string
 		if processedRecipes > 1 {
 			forks++
 		}
-		// report(1, layerCount, "On the second layer")
 		multiplier := 1
 		outputAmount := recipe.Output
 		for outputAmount*multiplier < neededAmount {
@@ -78,25 +73,18 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) ([]string
 		for ingNumber, ing := range recipe.Ingredients {
 			inputAmount := ing.Amount * multiplier
 			ingredientName := ing.Name
-			formatStr := "Craft %d %s from %d %s; %s"
-			nextLevelArr, nextLevelForks := this.Branches[layerCount][ingNumber].getElements(inputAmount, resolve)
-			if len(nextLevelArr) == 0 {
-				nextLevelArr = append(nextLevelArr, "\n")
+			formatStr := "Craft %d %s from %d %s;"
+			nextLevelReport, nextLevelForks := this.Branches[layerCount][ingNumber].getElements(inputAmount, resolve)
+			if len(nextLevelReport.Lines) == 0 { //appending a new line to end of every long string
+				nextLevelReport.Lines = append(nextLevelReport.Lines, []string{})
 			}
 			forks += nextLevelForks
-			for _, nextLevel := range nextLevelArr {
-				var outStr string
-				templateStr := fmt.Sprintf(formatStr, outputAmount, name, inputAmount, ingredientName, `%s`)
-				if nextLevel == ORSIGNAL {
-					outStr = strings.Repeat(" ", len(templateStr)+5) + ORSIGNAL
-				} else {
-					outStr = fmt.Sprintf(templateStr, nextLevel)
-				}
-				out = append(out, outStr)
-			}
+			nextLevelReport.insertString(fmt.Sprintf(formatStr, outputAmount, name, inputAmount, ingredientName))
+			out.combineReports(nextLevelReport)
+
 		}
 		if layerCount < len(this.Root.Recipes)-1 && !OK { //if we're running a resolved layer then don't add the OR
-			out = append(out, ORSIGNAL)
+			out.addOR()
 		}
 	}
 	return out, forks

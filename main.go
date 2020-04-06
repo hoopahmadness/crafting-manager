@@ -130,7 +130,7 @@ func getElementsLoop(list CraftingList) {
 	print(say.QUESTION("How many of these do you want to make?"))
 	outputAmount := getInteger()
 	numForks := 1
-	output := []string{}
+	output := BranchingReport{}
 	resolutions := map[string]int{}
 	elementTree, OK := list.getElementTree(itemName)
 	if !OK {
@@ -140,7 +140,7 @@ func getElementsLoop(list CraftingList) {
 	elementTree.walk()
 	for numForks != 0 {
 		output, numForks = elementTree.getElements(outputAmount, resolutions)
-		print(say.RESULT(strings.Join(output, "")))
+		print(say.RESULT(output))
 		if numForks > 0 {
 			print(say.QUESTION(`Detecting possible forks. Would you like to resolve these?
 YES to make a choice between recipes to show, NO to return to main menu.`))
