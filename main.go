@@ -2,6 +2,8 @@ package main
 
 /*TO DO
 Prettier output for some data structures (recipes,)
+allow truncated yes (y), no (n), and back (escape key) responses
+allow searches with weird spaces in words, maybe punctuation
 Add a "SAVE" function to save before closing
 Add a "READ" function to add more recipes during operations
 Alphabet sort the help menus and listall
