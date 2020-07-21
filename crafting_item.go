@@ -8,7 +8,7 @@ type CraftingItem struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Recipes     []Recipe `json:"recipes"`
-	UsedIn      []string `json:"uses"`
+	usedIn      []string //lower case to hide it from JSON package
 }
 
 func newItem(name, description string) (item CraftingItem) {
@@ -43,10 +43,10 @@ func (this CraftingItem) String() string {
 	for _, recipe := range this.Recipes {
 		outStr = outStr + recipe.String(this.Name)
 	}
-	if len(this.UsedIn) > 0 {
+	if len(this.usedIn) > 0 {
 		outStr = outStr + "Can be used in: "
-		length := len(this.UsedIn)
-		for index, use := range this.UsedIn {
+		length := len(this.usedIn)
+		for index, use := range this.usedIn {
 			useStr := use
 			if index < length-1 {
 				useStr = useStr + ","

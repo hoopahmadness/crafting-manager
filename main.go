@@ -9,6 +9,7 @@ Add a "READ" function to add more recipes during operations
 Alphabet sort the help menus and listall
 split ingredients with |
 single-recipe circular logic (catalysts)
+support for inserting items with no recipes and no uses (uses can be added later)
 Some sort of sorting function so that longest branches are closer to the bottom for a given set of ingredients or for a given set of recipes
 */
 import (
@@ -141,7 +142,7 @@ func getElementsLoop(list CraftingList) {
 	}
 	elementTree.walk()
 	for numForks != 0 {
-		output, numForks = elementTree.getElements(outputAmount, resolutions)
+		output, numForks, _ = elementTree.getElements(outputAmount, resolutions, []int{})
 		print(say.RESULT(output))
 		if numForks > 0 {
 			print(say.QUESTION(`Detecting possible forks. Would you like to resolve these?

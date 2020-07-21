@@ -32,3 +32,9 @@ func renderColors() Saying {
 
 	return say
 }
+
+func (this Saying) paintWord(str string, X, Y int) string {
+	//for now...
+	// return say.WARNING(str)
+	return str
+}

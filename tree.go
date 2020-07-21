@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+var defaultColorRange = []int{-80, 80, -80, 80, 1}
+
 type Tree struct {
 	List     CraftingList
 	Root     *CraftingItem
@@ -47,15 +49,21 @@ func (this *Tree) walk() {
 	}
 }
 
-func (this Tree) getElements(neededAmount int, resolve map[string]int) (BranchingReport, int) {
+func (this Tree) getElements(neededAmount int, resolve map[string]int, colorRange []int) (BranchingReport, int, int) {
+	if len(colorRange) == 0 {
+		colorRange = defaultColorRange
+	}
 	if resolve == nil {
 		resolve = map[string]int{}
 	}
 	forks := 0
+	// totalRecursions := colorRange[4]
 	var out BranchingReport
 	name := this.Root.Name
 	processedRecipes := 0
+	layerDivides := splitRange(colorRange[0], colorRange[1], len(this.Root.Recipes))
 	for layerCount, recipe := range this.Root.Recipes {
+		layerRange := []int{layerDivides[layerCount], layerDivides[layerCount+1]}
 		val, OK := resolve[strings.ToLower(name)]
 		if OK && val != layerCount+1 { //check to see if we have a resolution for this branch, and only allow that layer to run
 			continue
@@ -70,16 +78,24 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) (Branchin
 			multiplier++
 		}
 		outputAmount = outputAmount * multiplier
+		ingredientDivides := splitRange(layerRange[0], layerRange[1], len(recipe.Ingredients))
 		for ingNumber, ing := range recipe.Ingredients {
+			ingredientRange := []int{ingredientDivides[ingNumber], ingredientDivides[ingNumber+1]}
 			inputAmount := ing.Amount * multiplier
 			ingredientName := ing.Name
-			formatStr := "Craft %d %s from %d %s;"
-			nextLevelReport, nextLevelForks := this.Branches[layerCount][ingNumber].getElements(inputAmount, resolve)
+			formatStr := "Craft #%d#^%d %s^ from #%d#^%d %s^;"
+			nextColorRange := append([]int{}, ingredientRange...)
+			nextColorRange = append(nextColorRange, colorRange[2:4]...)
+			nextColorRange = append(nextColorRange, colorRange[4]+1)
+			nextLevelReport, nextLevelForks, _ := this.Branches[layerCount][ingNumber].getElements(inputAmount, resolve, nextColorRange)
 			if len(nextLevelReport.Lines) == 0 { //appending a new line to end of every long string
 				nextLevelReport.Lines = append(nextLevelReport.Lines, []string{})
 			}
 			forks += nextLevelForks
-			nextLevelReport.insertString(fmt.Sprintf(formatStr, outputAmount, name, inputAmount, ingredientName))
+			// if numIncursions > totalRecursions {
+			// 	totalRecursions = numIncursions
+			// }
+			nextLevelReport.insertString(fmt.Sprintf(formatStr, colorRange[0], outputAmount, name, ingredientRange[0], inputAmount, ingredientName))
 			out.combineReports(nextLevelReport)
 
 		}
@@ -87,7 +103,7 @@ func (this Tree) getElements(neededAmount int, resolve map[string]int) (Branchin
 			out.addOR()
 		}
 	}
-	return out, forks
+	return out, forks, -1 //totalRecursions
 }
 
 func report(litmus, varString, toPrint interface{}) {
@@ -95,4 +111,16 @@ func report(litmus, varString, toPrint interface{}) {
 		fmt.Print("REPORT: ")
 		fmt.Println(toPrint)
 	}
+}
+
+func splitRange(top, bottom, divisions int) []int {
+	out := []int{}
+	if divisions == 0 {
+		return out
+	}
+	section := (top - bottom) / divisions
+	for ii := 0; ii <= divisions; ii++ {
+		out = append(out, top-section*ii)
+	}
+	return out
 }

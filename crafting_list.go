@@ -11,15 +11,17 @@ type CraftingList map[string]CraftingItem
 func (this CraftingList) addRecipe(name, description string, output int, ingredientList []Ingredient) {
 	//add the recipe
 	newCraftingItem := newItem(name, description)
-	newCraftingItem.Recipes = []Recipe{Recipe{output, ingredientList}}
-	this.insertItem(newCraftingItem)
+	if output > 0 {
+		newCraftingItem.Recipes = []Recipe{Recipe{output, ingredientList}}
+		//add or update the ingredients
+		for _, anIngredient := range ingredientList {
+			newIngredient := anIngredient.toItem()
+			newIngredient.usedIn = []string{name}
+			this.insertItem(newIngredient)
+		}
 
-	//add or update the ingredients
-	for _, anIngredient := range ingredientList {
-		newIngredient := anIngredient.toItem()
-		newIngredient.UsedIn = []string{name}
-		this.insertItem(newIngredient)
 	}
+	this.insertItem(newCraftingItem)
 
 }
 
@@ -34,9 +36,9 @@ func (this CraftingList) insertItem(item CraftingItem) {
 			oldItem.Description = item.Description
 		}
 		oldItem.Recipes = append(oldItem.Recipes, item.Recipes...)
-		if len(item.UsedIn) != 0 {
-			if !contains(oldItem.UsedIn, item.UsedIn[0]) {
-				oldItem.UsedIn = append(oldItem.UsedIn, item.UsedIn...)
+		if len(item.usedIn) != 0 {
+			if !contains(oldItem.usedIn, item.usedIn[0]) { //not sure why I'm only checking the first index here
+				oldItem.usedIn = append(oldItem.usedIn, item.usedIn...)
 			}
 		}
 		this[key] = oldItem
@@ -55,7 +57,7 @@ func (this CraftingList) getItem(itemName string) (item CraftingItem, OK bool) {
 
 func (this CraftingList) listUses(itemName string, recursion bool) []string {
 	itemName = strings.ToLower(itemName)
-	NUses := this[itemName].UsedIn
+	NUses := this[itemName].usedIn
 	if recursion && len(NUses) > 0 {
 		ARC := []string{}
 		for _, NUse := range NUses {
@@ -113,6 +115,10 @@ func (this CraftingList) fromBytes(b []byte) (err error) {
 	for _, item := range list {
 		for _, recipe := range item.Recipes {
 			this.addRecipe(item.Name, item.Description, recipe.Output, recipe.Ingredients)
+		}
+		if len(item.Recipes) == 0 {
+			basicItem := newItem(item.Name, item.Description)
+			this.insertItem(basicItem)
 		}
 	}
 	return
